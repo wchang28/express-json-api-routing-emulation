@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Express Routing Emulation for JSON-based API",
   "main": "./js/index.js",
+  "typings": "./js/index.d.ts",
   "scripts": {
     "test": "node ./js/test.js"
   },
