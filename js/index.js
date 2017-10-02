@@ -14,10 +14,16 @@ var events = require("events");
 var http = require("http");
 var url = require("url");
 var _ = require("lodash");
+var etag = require("etag");
 ;
 var EmulatedApp = /** @class */ (function () {
     function EmulatedApp() {
-        this._m = {};
+        this._m = {
+            "env": (process.env["NODE_ENV"] ? process.env["NODE_ENV"] : "development"),
+            "etag": "weak",
+            "jsonp callback name": "callback",
+            "x-powered-by": true
+        };
     }
     EmulatedApp.prototype.get = function (key) { return this._m[key]; };
     EmulatedApp.prototype.set = function (key, value) { this._m[key] = value; };
@@ -39,25 +45,40 @@ var EmulatedRequest = /** @class */ (function (_super) {
 }(events.EventEmitter));
 var EmulatedResponse = /** @class */ (function (_super) {
     __extends(EmulatedResponse, _super);
-    function EmulatedResponse(app) {
+    function EmulatedResponse(app, req) {
         var _this = _super.call(this) || this;
         _this.app = app;
+        _this.req = req;
         _this.finished = false;
         _this.__defaultEncoding = "utf8";
         _this.__body__ = "";
+        _this.sendDate = true;
         _this.statusCode = 200;
         _this.__headers__ = {};
+        if (_this.app.get("x-powered-by"))
+            _this.__headers__["x-powered-by"] = "Express";
         _this.__headersSent__ = false;
         return _this;
     }
     EmulatedResponse.prototype.setDefaultEncoding = function (encoding) {
         this.__defaultEncoding = encoding;
     };
+    EmulatedResponse.prototype.stringify = function (o) { return JSON.stringify(o, this.app.get("json replacer"), this.app.get("json spaces")); };
     EmulatedResponse.prototype.json = function (o) {
         this.set("content-type", "application/json; charset=utf-8");
-        this.end(JSON.stringify(o));
+        this.end(this.stringify(o));
     };
-    EmulatedResponse.prototype.jsonp = function (o) { this.json(o); };
+    EmulatedResponse.prototype.jsonp = function (o) {
+        var cbQueryKey = this.app.get("jsonp callback name");
+        if (cbQueryKey && this.req.query && this.req.query[cbQueryKey]) {
+            var callback = this.req.query[cbQueryKey];
+            var s = "/**/ typeof " + callback + " === 'function' && " + callback + "(" + this.stringify(o) + ");";
+            this.set("content-type", "text/javascript; charset=utf-8");
+            this.end(s);
+        }
+        else
+            this.json(o);
+    };
     EmulatedResponse.prototype.write = function (data, encoding) {
         var s = "";
         if (typeof data === "string")
@@ -71,7 +92,7 @@ var EmulatedResponse = /** @class */ (function (_super) {
             if (typeof data === "string" || data.constructor === Buffer)
                 this.write(data);
             else
-                this.write(JSON.stringify(data));
+                this.write(this.stringify(data));
         }
     };
     EmulatedResponse.prototype.end = function (data, encoding) {
@@ -167,7 +188,7 @@ var ExpressJSONApiRoutingEmulation = /** @class */ (function () {
             //////////////////////////////////////////////////////////////////////////
             // constuct an emulated Response object
             //////////////////////////////////////////////////////////////////////////
-            var res = new EmulatedResponse(app);
+            var res = new EmulatedResponse(app, req);
             var finalHandler = function () {
                 req.__emitFinalEvents();
                 res.__emitFinalEvents();
@@ -191,13 +212,40 @@ var ExpressJSONApiRoutingEmulation = /** @class */ (function () {
                     reject({ error: "not-found", error_description: "Cannot " + req.method.toUpperCase() + " " + options.path });
             };
             res.on("__on_final__", function () {
-                res.__headersSent__ = true; // mark headers sent
-                res.finished = true; // mark response finished
+                // set the status message
                 if (!res.statusMessage)
-                    res.statusMessage = http.STATUS_CODES[res.statusCode]; // set the status message
-                // set the content-length header
+                    res.statusMessage = http.STATUS_CODES[res.statusCode];
+                // set the "Content-Length" header field
                 if (res.__body__)
                     res.__headers__["content-length"] = Buffer.from(res.__body__, res.__defaultEncoding).byteLength.toString();
+                // set the "ETag" header field if it not already set
+                ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+                if (!res.__headers__["etag"] && res.__body__) {
+                    var etagFlag = app.get("etag");
+                    var tag = null;
+                    if (typeof etagFlag === "boolean") {
+                        if (etagFlag)
+                            tag = etag(res.__body__, { weak: true });
+                    }
+                    else if (typeof etagFlag === "string") {
+                        if (etagFlag.toLowerCase() === "weak")
+                            tag = etag(res.__body__, { weak: true });
+                        else if (etagFlag.toLowerCase() === "strong")
+                            tag = etag(res.__body__, { weak: false });
+                    }
+                    else if (typeof etagFlag === "function") {
+                        var generator = etagFlag;
+                        tag = generator(Buffer.from(res.__body__, res.__defaultEncoding), res.__defaultEncoding);
+                    }
+                    if (tag)
+                        res.__headers__["etag"] = tag;
+                }
+                ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+                // set the "Date" header field
+                if (res.sendDate)
+                    res.__headers__["date"] = new Date().toUTCString();
+                res.__headersSent__ = true; // mark headers sent
+                res.finished = true; // mark response finished
                 finalHandler();
             });
             //////////////////////////////////////////////////////////////////////////
