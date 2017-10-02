@@ -14,7 +14,7 @@ export interface JSONApiRequestOptions {
     body?: any;
 };
 
-class EmulatedApp {
+class EmulatedApplication {
     private _m: {[key: string]: any}
     constructor() {
         this._m = {
@@ -39,7 +39,7 @@ class EmulatedRequest extends events.EventEmitter {
     public params: any;
     public path: string;
     public hostname: string;
-    constructor(public app: EmulatedApp) {
+    constructor(public app: EmulatedApplication) {
         super();
         this.headers = {};
         this.query = {};
@@ -58,7 +58,7 @@ class EmulatedResponse extends events.EventEmitter {
     public statusMessage: string;
     public __headers__: {[key: string]: string};
     public __headersSent__: boolean;
-    constructor(public app: EmulatedApp, private req: EmulatedRequest) {
+    constructor(public app: EmulatedApplication, private req: EmulatedRequest) {
         super();
         this.finished = false;
         this.__defaultEncoding = "utf8";
@@ -158,16 +158,16 @@ export class ExpressJSONApiRoutingEmulation {
     route(options: JSONApiRequestOptions) : Promise<RESTReturn> {
         return new Promise<RESTReturn>((resolve: (value: RESTReturn) => void, reject: (err: any) => void) => {
             // constuct an emulated Application object
-            //////////////////////////////////////////////////////////////////////////
-            let app = new EmulatedApp();
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            let app = new EmulatedApplication();
             if (this.appParams) {
                 for (let key in this.appParams)
                     app.set(key, this.appParams[key]);
             }
-            //////////////////////////////////////////////////////////////////////////
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
             // constuct an emulated Request object
-            //////////////////////////////////////////////////////////////////////////
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             let parsed = url.parse(options.path, true);
             let req = new EmulatedRequest(app);
             req.method = options.method;
@@ -184,10 +184,10 @@ export class ExpressJSONApiRoutingEmulation {
             req.body = (options.body ? options.body : null);
             req.path = parsed.pathname;
             req.hostname = "";
-            //////////////////////////////////////////////////////////////////////////
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
             // constuct an emulated Response object
-            //////////////////////////////////////////////////////////////////////////
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             let res = new EmulatedResponse(app, req);
 
             let finalHandler = () => {
@@ -240,7 +240,7 @@ export class ExpressJSONApiRoutingEmulation {
                 res.finished = true;    // mark response finished
                 finalHandler();
             });
-            //////////////////////////////////////////////////////////////////////////
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
             this.router(<any>req, <any>res, finalHandler);    // route it           
         });

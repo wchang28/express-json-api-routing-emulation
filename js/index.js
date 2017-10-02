@@ -16,8 +16,8 @@ var url = require("url");
 var _ = require("lodash");
 var etag = require("etag");
 ;
-var EmulatedApp = /** @class */ (function () {
-    function EmulatedApp() {
+var EmulatedApplication = /** @class */ (function () {
+    function EmulatedApplication() {
         this._m = {
             "env": (process.env["NODE_ENV"] ? process.env["NODE_ENV"] : "development"),
             "etag": "weak",
@@ -25,9 +25,9 @@ var EmulatedApp = /** @class */ (function () {
             "x-powered-by": true
         };
     }
-    EmulatedApp.prototype.get = function (key) { return this._m[key]; };
-    EmulatedApp.prototype.set = function (key, value) { this._m[key] = value; };
-    return EmulatedApp;
+    EmulatedApplication.prototype.get = function (key) { return this._m[key]; };
+    EmulatedApplication.prototype.set = function (key, value) { this._m[key] = value; };
+    return EmulatedApplication;
 }());
 var EmulatedRequest = /** @class */ (function (_super) {
     __extends(EmulatedRequest, _super);
@@ -160,15 +160,15 @@ var ExpressJSONApiRoutingEmulation = /** @class */ (function () {
         var _this = this;
         return new Promise(function (resolve, reject) {
             // constuct an emulated Application object
-            //////////////////////////////////////////////////////////////////////////
-            var app = new EmulatedApp();
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            var app = new EmulatedApplication();
             if (_this.appParams) {
                 for (var key in _this.appParams)
                     app.set(key, _this.appParams[key]);
             }
-            //////////////////////////////////////////////////////////////////////////
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // constuct an emulated Request object
-            //////////////////////////////////////////////////////////////////////////
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             var parsed = url.parse(options.path, true);
             var req = new EmulatedRequest(app);
             req.method = options.method;
@@ -185,9 +185,9 @@ var ExpressJSONApiRoutingEmulation = /** @class */ (function () {
             req.body = (options.body ? options.body : null);
             req.path = parsed.pathname;
             req.hostname = "";
-            //////////////////////////////////////////////////////////////////////////
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // constuct an emulated Response object
-            //////////////////////////////////////////////////////////////////////////
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             var res = new EmulatedResponse(app, req);
             var finalHandler = function () {
                 req.__emitFinalEvents();
@@ -248,7 +248,7 @@ var ExpressJSONApiRoutingEmulation = /** @class */ (function () {
                 res.finished = true; // mark response finished
                 finalHandler();
             });
-            //////////////////////////////////////////////////////////////////////////
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             _this.router(req, res, finalHandler); // route it           
         });
     };
