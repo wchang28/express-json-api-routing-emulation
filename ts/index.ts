@@ -67,6 +67,7 @@ class EmulatedResponse extends events.EventEmitter {
         this.statusCode = 200;
         this.__headers__ = {};
         if (this.app.get("x-powered-by")) this.__headers__["x-powered-by"] = "Express";
+        this.__headers__["x-content-type-options"] = "nosniff";
         this.__headersSent__ = false;
     }
     setDefaultEncoding(encoding: string) {

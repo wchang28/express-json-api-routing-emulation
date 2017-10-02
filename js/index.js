@@ -57,6 +57,7 @@ var EmulatedResponse = /** @class */ (function (_super) {
         _this.__headers__ = {};
         if (_this.app.get("x-powered-by"))
             _this.__headers__["x-powered-by"] = "Express";
+        _this.__headers__["x-content-type-options"] = "nosniff";
         _this.__headersSent__ = false;
         return _this;
     }
