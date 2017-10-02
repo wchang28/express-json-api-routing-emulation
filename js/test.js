@@ -18,7 +18,7 @@ router.use(function (req, res, next) {
     next();
 });
 var servicesRouter = express.Router();
-servicesRouter.post("/hi", function (req, res) {
+servicesRouter.post("/user/:userId/activate", function (req, res) {
     console.log("");
     console.log("global=\n" + JSON.stringify(req.app.get("global"), null, 2));
     console.log("qyery=\n" + JSON.stringify(req.query, null, 2));
@@ -27,6 +27,7 @@ servicesRouter.post("/hi", function (req, res) {
     console.log("originalUrl=" + req.originalUrl);
     console.log("path=" + req.path);
     console.log("headers=\n" + JSON.stringify(req.headers, null, 2));
+    console.log("params=\n" + JSON.stringify(req.params, null, 2));
     console.log("");
     var body = req.body;
     res.json({ message: body.msg });
@@ -36,7 +37,7 @@ router.use("/services", servicesRouter);
 var routingEmulation = new emul.ExpressJSONApiRoutingEmulation(router, { "global": g });
 var options = {
     method: "POST",
-    path: "/services/hi?x=5&y=7"
+    path: "/services/user/xxxyyyzzz/activate?x=5&y=7"
     //,path: "/services/twit?x=5&y=7"
     ,
     body: { msg: "hawdy" }
