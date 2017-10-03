@@ -157,7 +157,7 @@ var ExpressJSONApiRoutingEmulation = /** @class */ (function () {
         this.router = router;
         this.appParams = appParams;
     }
-    ExpressJSONApiRoutingEmulation.prototype.route = function (options) {
+    ExpressJSONApiRoutingEmulation.prototype.route = function (options, context) {
         var _this = this;
         return new Promise(function (resolve, reject) {
             // constuct an emulated Application object
@@ -186,6 +186,8 @@ var ExpressJSONApiRoutingEmulation = /** @class */ (function () {
             req.body = (options.body ? options.body : null);
             req.path = parsed.pathname;
             req.hostname = "";
+            if (context)
+                req.context = context;
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // constuct an emulated Response object
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

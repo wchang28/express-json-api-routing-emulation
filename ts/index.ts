@@ -39,6 +39,7 @@ class EmulatedRequest extends events.EventEmitter {
     public params: any;
     public path: string;
     public hostname: string;
+    public context: any
     constructor(public app: EmulatedApplication) {
         super();
         this.headers = {};
@@ -156,7 +157,7 @@ function goodHTTPStatusCode(statusCode: number) : boolean {
 
 export class ExpressJSONApiRoutingEmulation {
     constructor(private router: express.Router, private appParams?:{[key: string]: any}) { }
-    route(options: JSONApiRequestOptions) : Promise<RESTReturn> {
+    route(options: JSONApiRequestOptions, context?: any) : Promise<RESTReturn> {
         return new Promise<RESTReturn>((resolve: (value: RESTReturn) => void, reject: (err: any) => void) => {
             // constuct an emulated Application object
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -185,6 +186,7 @@ export class ExpressJSONApiRoutingEmulation {
             req.body = (options.body ? options.body : null);
             req.path = parsed.pathname;
             req.hostname = "";
+            if (context) req.context = context;
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
             // constuct an emulated Response object

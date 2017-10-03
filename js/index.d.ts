@@ -16,5 +16,5 @@ export declare class ExpressJSONApiRoutingEmulation {
     constructor(router: express.Router, appParams?: {
         [key: string]: any;
     });
-    route(options: JSONApiRequestOptions): Promise<RESTReturn>;
+    route(options: JSONApiRequestOptions, context?: any): Promise<RESTReturn>;
 }
