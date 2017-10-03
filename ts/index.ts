@@ -4,11 +4,11 @@ import * as http from "http";
 import * as url from "url";
 import * as _ from "lodash";
 import * as etag from "etag";
-import {RESTReturn} from "rest-api-interfaces";
-export {RESTReturn} from "rest-api-interfaces";
+import {RESTReturn, HTTPMethod} from "rest-api-interfaces";
+export {RESTReturn, HTTPMethod} from "rest-api-interfaces";
 
 export interface JSONApiRequestOptions {
-    method: string;
+    method: HTTPMethod;
     path: string;
     headers?: {[key: string]: string}
     body?: any;
