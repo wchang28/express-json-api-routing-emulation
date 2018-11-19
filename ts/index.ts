@@ -33,7 +33,7 @@ class EmulatedRequest extends events.EventEmitter {
     public headers: {[key: string]: string};
     public url: string;
     public body: any;
-    public query: {[key: string]: string};
+    public query: {[key: string]: any};
     public baseUrl: string;
     public originalUrl: string;
     public params: any;

@@ -1,8 +1,11 @@
 "use strict";
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    }
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -131,7 +134,7 @@ var EmulatedResponse = /** @class */ (function (_super) {
                 if (headers)
                     this.set(headers);
             }
-            else {
+            else { // statusMessage is actually headers
                 var hdrs = statusMessage;
                 this.set(hdrs);
             }
@@ -223,7 +226,7 @@ var ExpressJSONApiRoutingEmulation = /** @class */ (function () {
                     res.__headers__["content-length"] = Buffer.from(res.__body__, res.__defaultEncoding).byteLength.toString();
                 // set the "ETag" header field if it not already set
                 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-                if (!res.__headers__["etag"] && res.__body__) {
+                if (!res.__headers__["etag"] && res.__body__) { // etag not set yet
                     var etagFlag = app.get("etag");
                     var tag = null;
                     if (typeof etagFlag === "boolean") {
